@@ -11,6 +11,9 @@ Algorithms implemented:
 - Alpha Algorithm
 - Heuristic Miner
 
+## Screenshot
+![Process Mining Tool](screenshot.png)
+
 ## Tech Stack
 
 - **Backend:** Python 3.12+, Flask (REST API)
@@ -33,8 +36,8 @@ brew install graphviz
 
 ### 1. Clone the project
 ```bash
-git clone git clone https://github.com/phuonganh0804/process-mining-tool.git
-cd process-mining-tum-pratikum
+git clone https://github.com/phuonganh0804/process-mining-tool.git
+cd process-mining-tool
 ```
 
 ### 2. Backend
