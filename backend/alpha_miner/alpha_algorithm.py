@@ -2,6 +2,7 @@ import graphviz
 from prettytable import PrettyTable
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 class AlphaAlgorithm:
 
@@ -221,7 +222,8 @@ class AlphaAlgorithm:
     def step_8(self):
         table = PrettyTable()
         table.field_names = ["Place", " "]
-        dot = graphviz.Digraph('petrinet', format='png', graph_attr={'rankdir':  'LR', 'nodesep': '1' })
+        output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'results', 'petrinet')
+        dot = graphviz.Digraph(filename=output_path, format='png', graph_attr={'rankdir':  'LR', 'nodesep': '1' })
         dot.graph_attr['ranksep'] = '1'
         with dot.subgraph(name="places", node_attr={'shape': 'circle'}) as places:
             n = 1

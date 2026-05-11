@@ -1,5 +1,6 @@
 import graphviz
 from prettytable import PrettyTable
+import os
 
 class HeuristicMiner:
 
@@ -251,13 +252,15 @@ class HeuristicMiner:
 
     def step_3(self):
         if len(self.input) == 0 and len(self.output) == 0:
-            dot = graphviz.Digraph('heuristic', format='png')
+            output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'results', 'heuristic')
+            dot = graphviz.Digraph(filename=output_path, format='png')
             with dot.subgraph(name="heuristic net", node_attr={'shape': 'square'}, graph_attr={'rankdir':  'LR', 'nodesep': '1' }) as net:
                 net.graph_attr['ranksep'] = '1'
                 net.node_attr['shape'] = 'square'
                 dot.node("no relations detected")
             return dot.render()
-        dot = graphviz.Digraph('heuristic', format='png')
+        output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'results', 'heuristic')
+        dot = graphviz.Digraph(filename=output_path, format='png')
         with dot.subgraph(name="heuristic net", node_attr={'shape': 'square'}, graph_attr={'rankdir':  'LR', 'nodesep': '1' }) as net:
             net.graph_attr['ranksep'] = '1'
             net.node_attr['shape'] = 'square'

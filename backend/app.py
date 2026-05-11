@@ -1,79 +1,82 @@
-from flask import Flask, render_template, request, flash, redirect, send_from_directory, session, url_for
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from alpha_miner.alpha_algorithm import AlphaAlgorithm
-from heuristic_miner.heuristic_mining import HeuristicMiner 
+from heuristic_miner.heuristic_mining import HeuristicMiner
 import os
-import shutil
-from flask import request
 
-UPLOAD_FOLDER = './backend/static/uploads'
-
-# define allowed files:
-ALLOWED_EXTENSIONS = {'xes', 'pdf'}
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+ALLOWED_EXTENSIONS = {'xes'}
 
 app = Flask(__name__)
-
-# Configure upload file path flask
+CORS(app)  # allows direct API access outside of Vite proxy
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key')
 
-# Set the secret key to some random bytes.
-app.secret_key = b'_5#y2251248rt8z\n\xec]/'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+RESULTS_FOLDER = os.path.join(BASE_DIR, 'static', 'results')
+os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/api/upload', methods=['GET', 'POST'])
-def index():
-    if request.method == "POST":
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                            filename))
-            session['uploaded_data_file_path'] = os.path.join(app.config['UPLOAD_FOLDER'],
-                     filename)
-            # Uploaded File Path
-            data_file_path = session.get('uploaded_data_file_path', None)
-            # read .xes file
-            algorithm = request.form.get("algorithm")
-            d = {}
-            if (algorithm == "Alpha Algorithm"):
-                mining = AlphaAlgorithm(data_file_path)    
-                result = mining.get_petri_net()  
-                d['message'] = result
-            elif (algorithm == "Heuristic Miner"):
-                dependency = float(request.form.get("dependency"))
-                and_threshold = float(request.form.get("and"))
-                positive_observation = float(request.form.get("observation"))
-                relative_to_best = float(request.form.get("relative"))
-                mining = HeuristicMiner(data_file_path, dependency, and_threshold, positive_observation, relative_to_best)
-                result = mining.heuristic_net()
-                d['message'] = result 
-            dest = './frontend/src/result.png' 
-            shutil.copy(d['message'], dest)
-            return redirect(url_for("pdf", data=d['message']))
-    return render_template('index.html')
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
 
-@app.route('/uploads/<name>')
-def download_file(name):
-    return render_template("upload.html", filename=name)
+    file = request.files['file']
 
-@app.route('/pdf/<data>')
-def pdf(data):
-    return send_from_directory("../", data)
-    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'File type not allowed, only .xes files accepted'}), 400
+
+    algorithm = request.form.get('algorithm')
+    if algorithm not in ('Alpha Algorithm', 'Heuristic Miner'):
+        return jsonify({'error': 'Invalid algorithm selected'}), 400
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+
+    try:
+        if algorithm == 'Alpha Algorithm':
+            mining = AlphaAlgorithm(file_path)
+            result_path = mining.get_petri_net()
+        elif algorithm == 'Heuristic Miner':
+            try:
+                dependency = float(request.form.get('dependency'))
+                and_threshold = float(request.form.get('and'))
+                positive_observation = float(request.form.get('observation'))
+                relative_to_best = float(request.form.get('relative'))
+            except ValueError:
+                return jsonify({'error': 'Heuristic parameters must be numbers'}), 400
+            mining = HeuristicMiner(file_path, dependency, and_threshold, positive_observation, relative_to_best)
+            result_path = mining.heuristic_net()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'result': result_path}), 200
+
+
+@app.route('/api/result')
+def result():
+    path = request.args.get('path')
+    if not path:
+        return jsonify({'error': 'No path provided'}), 400
+
+    abs_path = os.path.abspath(os.path.join(BASE_DIR, '..', path))
+
+    if not os.path.exists(abs_path):
+        return jsonify({'error': f'Result not found: {abs_path}'}), 404
+
+    return send_file(abs_path, mimetype='image/png')
+
+
 if __name__ == '__main__':
-   app.run(debug=True)
-    
-
-
+    app.run(debug=True)

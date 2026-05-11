@@ -1,43 +1,80 @@
-## Process Mining with Alpha Algorithm and Heuristic Miner
+# Process Mining with Alpha Algorithm and Heuristic Miner
 
-## Project's Objectives
+## Project Objectives
 
-Implement a webservice to provide process discovery results in a light-weight form in order to facilitate the analysis of process execution data for non-technical experts. The webservice should take a XES file as input and depict the results of a process discovery algorithm.
+Implement a web service to provide process discovery results in a lightweight form
+to facilitate the analysis of process execution data for non-technical experts.
+The web service takes a XES file as input and depicts the results of a process
+discovery algorithm.
 
-Understand and successfully implement alpha algorithm to execute the process mining. Additional algorithm(s) implemented here is heuristic miner.
+Algorithms implemented:
+- Alpha Algorithm
+- Heuristic Miner
 
-## Implementation Details
+## Tech Stack
 
-Python 3.11.4 is currently used. All the dependencies and additional python packages can be found in requirements.txt.
+- **Backend:** Python 3.12+, Flask (REST API)
+- **Frontend:** React 18, Vite
+- **Algorithms:** Alpha Algorithm, Heuristic Miner
+- **Visualization:** Graphviz
 
-Server side: uses Flask framework to receive Http request and send back Http response.
+## Prerequisites
 
-Client side: uses Javascript, Html, CSS and React library / Flask framework to send Http request and interact with users.
+- Python 3.12+
+- Node.js 20+
+- Graphviz system package
 
-Datasets for testing located in backend/static/uploads.
+Install Graphviz (Mac):
+```bash
+brew install graphviz
+```
 
-In your terminal, do as follows:
+## Setup
 
-1. git clone the project
-2. pip install -r requirements.txt
+### 1. Clone the project
+```bash
+git clone https://github.com/phuonganh0804/process-mining-tum-pratikum.git
+cd process-mining-tum-pratikum
+```
 
-Two ways to run the Program:
+### 2. Backend
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-3. Using Flask framework:
+### 3. Frontend
+```bash
+cd frontend
+npm install
+```
 
-- 3.1. run app.py
-- 3.2. navigate to http://127.0.0.1:5000/api/upload to upload file.
+## Running the App
 
-4. Using React library:
+Two terminals are required.
 
-- 4.1. cd frontend
-- 4.2. npm install react-scripts
-- 4.3. npm start
+**Terminal 1 — Backend:**
+```bash
+source .venv/bin/activate
+python backend/app.py
+```
 
-  After a few seconds, the web app will be opened on your browser at http://localhost:3000/.
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm run dev
+```
 
-- 4.4. run app.py
+Then open http://localhost:5173 in your browser.
 
-  go back to http://localhost:3000/ to interact with the web app.
+## Usage
 
-  Note: Once installed, the app can be executed without steps 1, 2 and 4.2.
+1. Select a `.xes` file
+2. Choose an algorithm (Alpha Algorithm or Heuristic Miner)
+3. If using Heuristic Miner, configure the thresholds
+4. Click **Start Mining** to view the result
+
+## Datasets
+
+Sample `.xes` files for testing are located in `backend/static/uploads`.
