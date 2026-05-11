@@ -1,8 +1,8 @@
 import graphviz
 from prettytable import PrettyTable
-import numpy as np
 import matplotlib.pyplot as plt
 import os
+import xml.etree.ElementTree as ET
 
 class AlphaAlgorithm:
 
@@ -23,58 +23,59 @@ class AlphaAlgorithm:
 
     def step_1(self):
         # check all traces in event log:
-        file = open(self.file, 'r')
-        text = file.read()
-        file.close()
-        traces = text.split('<trace>')
-        traces.pop(0)
-        for i in traces:
-            events = i.split('<event>')
-            events.pop(0)
-            trace = []
-            for event in events:
-                indexN = event.find('name')
-                n = 13
-                name = ''
-                while event[indexN+n] != '"':
-                    name = name + event[indexN+n]
-                    n += 1
-                indexT = event.find('transition')
-                if indexT != -1:
-                    m = 19
-                    transition = ''
-                    while event[indexT+m] != '"':
-                        transition = transition + event[indexT+m]
-                        m += 1
-                    transition = transition.lower()
-                    if transition == 'complete' or transition == 'closed':
+        tree = ET.parse(self.file)
+        root = tree.getroot()
+        # XES files may or may not have a namespace
+        ns = root.tag.split('}')[0] + '}' if '}' in root.tag else ''
 
+        for trace_elem in root.iter(f'{ns}trace'):
+            trace = []
+            for event_elem in trace_elem.iter(f'{ns}event'):
+                name = None
+                transition = None
+                for attr in event_elem:
+                    key = attr.get('key', '')
+                    value = attr.get('value', '')
+                    if key == 'concept:name':
+                        name = value
+                    elif key == 'lifecycle:transition':
+                        transition = value.lower()
+
+                if name is None:
+                    continue
+
+                # filter by transition if present
+                if transition is not None:
+                    if transition in ('complete', 'closed'):
                         trace.append(name)
                 else:
                     trace.append(name)
-                # check frequency of each event: 
+
+                # check frequency of each event
                 if name not in self.event:
                     self.event[name] = 1
                 else:
-                    self.event[name] += self.event[name]
-                # check all transitions:
-                if self.tL.count(name) == 0:
+                    self.event[name] += 1
+
+                # check all transitions
+                if name not in self.tL:
                     self.tL.append(name)
-            if self.eventLog.count(trace) == 0:
-                self.eventLog.append(trace)
+
+            if trace and trace not in self.eventLog:
+                self.eventLog.append(trace)                                           
         self.tL.sort()
         return self.tL 
     
     def step_2(self):
         for trace in self.eventLog:
-            if self.tI.count(trace[0]) == 0:
+            if trace[0] not in self.tI:
                 self.tI.append(trace[0])
         self.tI.sort()
         return self.tI 
     
     def step_3(self):
         for trace in self.eventLog:
-            if self.tO.count(trace[len(trace)-1]) == 0:
+            if trace[len(trace)-1] not in self.tO:
                 self.tO.append(trace[len(trace)-1])
         self.tO.sort()
         return self.tO
@@ -82,7 +83,7 @@ class AlphaAlgorithm:
     def test_independent(self, tmp):
         for i in range(len(tmp)): 
             for j in range(i, len(tmp)):
-                if self.parallel.count((tmp[i], tmp[j]))!= 0 or self.parallel.count((tmp[j], tmp[j]))!= 0 :
+                if (tmp[i], tmp[j]) in self.parallel or (tmp[j], tmp[j]) in self.parallel:
                     return False
         return True 
     
@@ -96,12 +97,12 @@ class AlphaAlgorithm:
                     tmp = ([trace[i]], [trace[i+1]])
                     reversedTmp = ([trace[i+1]],[trace[i]])
                     if [trace[i]] == [trace[i+1]]:
-                        if self.parallel.count((trace[i], trace[i+1])) == 0:
+                        if (trace[i], trace[i+1]) not in self.parallel:
                             self.parallel.append((trace[i], trace[i+1]))
                     else:
-                        if basic.count(tmp) == 0:
-                            if basic.count(reversedTmp) == 0:
-                                if self.parallel.count((trace[i], trace[i+1])) == 0:
+                        if tmp not in basic:
+                            if reversedTmp not in basic:
+                                if (trace[i], trace[i+1]) not in self.parallel:
                                     basic.append(tmp)
                             else:
                                 basic.remove(reversedTmp)
@@ -125,54 +126,54 @@ class AlphaAlgorithm:
                     tmpL = []
                     tmpL.extend(current[1])
                     for k in next[1]:
-                        if tmpL.count(k) == 0:
+                        if k not in tmpL:
                             tmpL.append(k)
                     tmpL.sort()
                     if self.test_independent(tmpL) == True:
-                        if basic.count((current[0], tmpL)) == 0:
+                        if (current[0], tmpL) not in basic:
                             basic.append((current[0], tmpL))
                         # remove merged pair from minimum list:
-                        if self.min.count((current)) != 0:
+                        if (current) in self.min:
                             self.min.remove((current))
-                        if self.min.count((next)) != 0:
+                        if (next) in self.min:
                             self.min.remove((next))
                         # add the unioned pair to maximum list if not present:
-                        if self.max.count((current[0], tmpL)) == 0:
+                        if (current[0], tmpL) not in self.max:
                             self.max.append((current[0], tmpL))
-                            if self.max.count((current)) != 0:
+                            if (current) in self.max:
                                 self.max.remove((current))
-                            if self.max.count((next)) != 0:
+                            if (next) in self.max:
                                 self.max.remove((next)) 
                         else:
-                            if (current[0], tmpL) != current and self.max.count((current)) != 0 :
+                            if (current[0], tmpL) != current and (current) in self.max:
                                 self.max.remove((current))
-                            if (current[0], tmpL) != next and self.max.count((next)) != 0:
+                            if (current[0], tmpL) != next and (next) in self.max:
                                 self.max.remove((next)) 
                        
                 elif current[1] == next[1]:
                     tmpF = []
                     tmpF.extend(current[0])
                     for k in next[0]:
-                        if tmpF.count(k) == 0:
+                        if k not in tmpF:
                             tmpF.append(k)
                     tmpF.sort()
                     if self.test_independent(tmpF) == True:
-                        if basic.count((tmpF, current[1])) == 0:
+                        if (tmpF, current[1]) not in basic:
                             basic.append((tmpF, current[1]))
-                        if self.min.count((current)) != 0:
+                        if (current) in self.min:
                             self.min.remove((current))
-                        if self.min.count((next)) != 0:
+                        if (next) in self.min:
                             self.min.remove((next))
-                        if self.max.count((tmpF, current[1])) == 0:
+                        if (tmpF, current[1]) not in self.max:
                             self.max.append((tmpF, current[1]))
-                            if self.max.count((current)) != 0:
+                            if (current) in self.max:
                                 self.max.remove((current))
-                            if self.max.count((next)) != 0:
+                            if (next) in self.max:
                                 self.max.remove((next)) 
                         else:
-                            if (tmpF, current[1]) != current and self.max.count((current)) != 0:
+                            if (tmpF, current[1]) != current and (current) in self.max:
                                 self.max.remove((current))
-                            if (tmpF, current[1]) != next and self.max.count((next)) != 0:
+                            if (tmpF, current[1]) != next and (next) in self.max:
                                 self.max.remove((next)) 
                             
         self.xL.extend(self.max)                    
@@ -251,11 +252,11 @@ class AlphaAlgorithm:
         for current in self.fL:
             if visited.count(current[0]) == 1 and visited.count(current[1]) == 1:
                 dot.edge(current[0], current[1])
-            if visited.count(current[0]) == 0 :
+            if current[0] not in visited:
                 visited.append(current[0])
                 dot.edge(current[0], current[1])
                 edges[current] = 1     
-            if visited.count(current[1]) == 0:
+            if current[1] not in visited:
                 visited.append(current[1])
                 if current not in edges.keys():
                     dot.edge(current[0], current[1])

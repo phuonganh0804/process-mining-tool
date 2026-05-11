@@ -1,6 +1,7 @@
 import graphviz
 from prettytable import PrettyTable
 import os
+import xml.etree.ElementTree as ET
 
 class HeuristicMiner:
 
@@ -21,42 +22,36 @@ class HeuristicMiner:
 
     def step_1(self):
         #read file:
-        file = open(self.file, 'r')
-        text = file.read()
-        file.close()
-        traces = text.split('<trace>')
-        traces.pop(0)
-        for i in traces:
-            events = i.split('<event>')
-            events.pop(0)
+        tree = ET.parse(self.file)
+        root = tree.getroot()
+        ns = root.tag.split('}')[0] + '}' if '}' in root.tag else ''
+        for trace_elem in root.iter(f'{ns}trace'):
             trace = []
-            for event in events:
-                indexN = event.find('name')
-                n = 13
-                name = ''
-                while event[indexN+n] != '"':
-                    name = name + event[indexN+n]
-                    n += 1
-                indexT = event.find('transition')
-                if indexT != -1:
-                    m = 19
-                    transition = ''
-                    while event[indexT+m] != '"':
-                        transition = transition + event[indexT+m]
-                        m += 1
-                    transition = transition.lower()
-                    if transition == 'complete' or transition == 'closed':
-
+            for event_elem in trace_elem.iter(f'{ns}event'):
+                name = None
+                transition = None
+                for attr in event_elem:
+                    key = attr.get('key', '')
+                    value = attr.get('value', '')
+                    if key == 'concept:name':
+                        name = value
+                    elif key == 'lifecycle:transition':
+                        transition = value.lower()
+                if name is None:
+                    continue
+                if transition is not None:
+                    if transition in ('complete', 'closed'):
                         trace.append(name)
                 else:
                     trace.append(name)
             self.eventLog.append(trace)
+
     
         # check all activities:
         for trace in self.eventLog:
             traceLength = len(trace)
             for i in range(traceLength):
-                if self.activities.count(trace[i]) == 0:
+                if trace[i] not in self.activities:
                     self.activities.append(trace[i])
         self.activities.sort()
         # check frequency of all pairs:
@@ -123,7 +118,7 @@ class HeuristicMiner:
         # check start activities:
         start = []
         for trace in self.eventLog:
-            if start.count(trace[0]) == 0:
+            if trace[0] not in start:
                 start.append(trace[0])
         start.sort()
         for current in start:
@@ -132,7 +127,7 @@ class HeuristicMiner:
         # check end activities:
         end = []
         for trace in self.eventLog:
-            if end.count(trace[len(trace)-1]) == 0:
+            if trace[len(trace)-1] not in end:
                 end.append(trace[len(trace)-1])
         end.sort()
         for current in end:
@@ -270,7 +265,7 @@ class HeuristicMiner:
                 for value in self.output[key]:
                     if isinstance(value, tuple) == True:
                         for i in value:
-                            if visited.count(i) == 0:
+                            if i not in visited:
                                 visited.append(i)
                                 dot.node(i)
                                 if i != '0':
@@ -279,7 +274,7 @@ class HeuristicMiner:
                                 else:
                                     dot.edge(key, i)
                     else:
-                        if visited.count(value) == 0:
+                        if value not in visited:
                             visited.append(value)
                             if value != '0':
                                 tmp = self.dependency[(key,value)]
