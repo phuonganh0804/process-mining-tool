@@ -75,7 +75,7 @@ def result():
     if not os.path.exists(abs_path):
         return jsonify({'error': f'Result not found: {abs_path}'}), 404
 
-    return send_file(abs_path, mimetype='image/png')
+    return send_file(abs_path, mimetype='image/svg+xml')
 
 
 if __name__ == '__main__':

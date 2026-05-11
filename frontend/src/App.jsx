@@ -35,7 +35,7 @@ function App() {
       setError(null);
       const response = await axios.post(`/api/upload`, formData);
       const imagePath = response.data.result;
-      setResultImage(`/api/result?path=${encodeURIComponent(imagePath)}`);
+      setResultImage(`/api/result?path=${encodeURIComponent(imagePath)}&t=${Date.now()}`);
       
     } catch (err) {
       setError(err.response?.data?.error || "Upload failed");
@@ -85,10 +85,13 @@ function App() {
             {loading ? "Mining..." : "Start Mining"}
           </button>
         </form>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="error">{error}</p>}
       </div>
       <div className="output">
-        {resultImage && <img src={resultImage} alt="Mining result" />}
+        {resultImage
+          ? <img src={resultImage} alt="Mining result" style={{ maxWidth: '100%' }} />
+          : <p className="placeholder">Upload a .xes file and select an algorithm to see the result</p>
+        }
       </div>
     </div>
   );

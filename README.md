@@ -33,7 +33,7 @@ brew install graphviz
 
 ### 1. Clone the project
 ```bash
-git clone https://github.com/phuonganh0804/process-mining-tum-pratikum.git
+git clone git clone https://github.com/phuonganh0804/process-mining-tool.git
 cd process-mining-tum-pratikum
 ```
 

@@ -223,7 +223,7 @@ class AlphaAlgorithm:
         table = PrettyTable()
         table.field_names = ["Place", " "]
         output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'results', 'petrinet')
-        dot = graphviz.Digraph(filename=output_path, format='png', graph_attr={'rankdir':  'LR', 'nodesep': '1' })
+        dot = graphviz.Digraph(filename=output_path, format='svg', graph_attr={'rankdir': 'LR', 'nodesep': '1'})
         dot.graph_attr['ranksep'] = '1'
         with dot.subgraph(name="places", node_attr={'shape': 'circle'}) as places:
             n = 1
