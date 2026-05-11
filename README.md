@@ -12,14 +12,15 @@ Algorithms implemented:
 - Heuristic Miner
 
 ## Screenshot
+
 ![Process Mining Tool](screenshot.png)
 
 ## Tech Stack
 
 - **Backend:** Python 3.12+, Flask (REST API)
-- **Frontend:** React 18, Vite
+- **Frontend:** React 19, Vite 8
 - **Algorithms:** Alpha Algorithm, Heuristic Miner
-- **Visualization:** Graphviz
+- **Visualization:** Graphviz (SVG output)
 
 ## Prerequisites
 
@@ -81,3 +82,8 @@ Then open http://localhost:5173 in your browser.
 ## Datasets
 
 Sample `.xes` files for testing are located in `backend/static/uploads`.
+
+## Known Limitations
+
+- The Alpha Algorithm does not handle loops or duplicate activities well. This is a theoretical limitation of the algorithm itself
+- The app runs a single-threaded development server; for production use, a WSGI server like Gunicorn is recommended
