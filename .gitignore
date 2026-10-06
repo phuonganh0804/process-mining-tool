@@ -1,0 +1,6 @@
+# Python bytecode (regenerated on every run)
+__pycache__/
+*.py[cod]
+
+# Local virtual environment (see README setup)
+.venv/
