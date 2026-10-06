@@ -1,11 +1,15 @@
+import os
 import unittest
 
 from heuristic_mining import HeuristicMiner
 
+# Sample logs ship with the repo in backend/static/uploads.
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'uploads')
+
 class TestStep1(unittest.TestCase):
 
     def test_L1(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L1.xes', 0.4, 0.1, 0.5, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L1.xes'), 0.4, 0.1, 0.5, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -16,7 +20,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_L2(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L2.xes', 0.5, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L2.xes'), 0.5, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -27,7 +31,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_L3(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L3.xes', 0.5, 0.1, 0.5, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L3.xes'), 0.5, 0.1, 0.5, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -38,7 +42,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
     
     def test_L4(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L4.xes', 0.6, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L4.xes'), 0.6, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -49,7 +53,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_L5(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L5.xes', 0.6, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L5.xes'), 0.6, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -60,7 +64,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_L6(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L6.xes', 0.5, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L6.xes'), 0.5, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -72,7 +76,7 @@ class TestStep1(unittest.TestCase):
 
     # loop one
     def test_L7(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/L7.xes', 0.5, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'L7.xes'), 0.5, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -83,7 +87,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_bill_instances(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/billinstances.xes', 0.7, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'billinstances.xes'), 0.7, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -95,7 +99,7 @@ class TestStep1(unittest.TestCase):
     
     #loop two
     def test_flyer_instance(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/flyerinstances.xes', 0.7, 0.1, 0.5, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'flyerinstances.xes'), 0.7, 0.1, 0.5, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -106,7 +110,7 @@ class TestStep1(unittest.TestCase):
         self.assertEqual(observed_output,expected_output)
 
     def test_poster_instances(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/posterinstances.xes', 0.7, 0.1, 1, 0.4)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'posterinstances.xes'), 0.7, 0.1, 1, 0.4)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
@@ -118,7 +122,7 @@ class TestStep1(unittest.TestCase):
 
     
     def test_running_example(self):
-        self.x = HeuristicMiner('/Users/phuonganhngo/Downloads/datasets/running-example.xes', 0.3, 0.1, 0.5, 2)
+        self.x = HeuristicMiner(os.path.join(DATA_DIR, 'running-example.xes'), 0.3, 0.1, 0.5, 2)
         self.x.step_1()
         self.x.step_2()
         observed_input = self.x.input
