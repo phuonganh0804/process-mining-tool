@@ -100,15 +100,29 @@ class HeuristicMiner:
         return self.dependency  
         
     def step_2(self):
+        # Relative to best (Weijters et al.): a dependency a=>b only counts if it is
+        # close to the STRONGEST dependency of the same activity - a's best outgoing
+        # edge for a's outputs, b's best incoming edge for b's inputs.
+        best_out = {}
+        best_in = {}
+        for (source, target), dep in self.dependency.items():
+            best_out[source] = max(best_out.get(source, dep), dep)
+            best_in[target] = max(best_in.get(target, dep), dep)
         # check input, output first round:
         for pair in self.dependency:
-            if self.dependency[pair] > self.dependency_threshold and self.frequency[pair] > self.positive_observation and (self.dependency[pair] - self.dependency_threshold) < self.relative_to_best:
+            dep = self.dependency[pair]
+            # Length-two loop pairs are counted in loops_two, not in frequency.
+            observations = self.frequency.get(pair, self.loops_two.get(pair, 0))
+            if dep <= self.dependency_threshold or observations <= self.positive_observation:
+                continue
+            if best_out[pair[0]] - dep < self.relative_to_best:
                 first = pair[0].split(',')
                 for current in first:
                     if current in self.output and pair[1] not in self.output[current]:
                         self.output[current].append(pair[1])
                     elif current not in self.output:
                         self.output[current] = [pair[1]]
+            if best_in[pair[1]] - dep < self.relative_to_best:
                 last = pair[1].split(',')
                 for current in last:
                     if current in self.input and pair[0] not in self.input[current]:
